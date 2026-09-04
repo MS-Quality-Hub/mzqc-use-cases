@@ -1,0 +1,104 @@
+{
+  "mzQC": {
+    "creationDate": "2026-09-04T09:38:38Z",
+    "version": "1.0.0",
+    "contactName": "GC_MS_pickPeaks_and_match.py",
+    "description": "Quartiles (Q1, Q2, Q3) of delta RT, S/N and FWHM, the mean intensity, and the per-compound delta RT and intensity tables, across targeted/expected GC-QC compounds, per input mzML file. Uses custom CV terms MS:4000216-MS:4000224, appended to the copy of psi-ms.obo in this project's analysis/ folder pending official PSI-MS submission.",
+    "runQualities": [
+      {
+        "metadata": {
+          "label": "20251020_01_00a-SAR289-R3a-QC-Mix0_01.mzML",
+          "inputFiles": [
+            {
+              "location": "file:///group/ag_bsc/bsc_intern/Projects/2026_mzQC_GCMS/MTBLS/Shimadzu_new/20251020_01_00a-SAR289-R3a-QC-Mix0_01.mzML",
+              "name": "20251020_01_00a-SAR289-R3a-QC-Mix0_01.mzML",
+              "fileFormat": {
+                "accession": "MS:1000584",
+                "name": "mzML format"
+              }
+            }
+          ],
+          "analysisSoftware": [
+            {
+              "accession": "MS:1000799",
+              "name": "custom unreleased software tool",
+              "value": "GC_MS_pickPeaks_and_match.py",
+              "version": "1.0.0"
+            }
+          ]
+        },
+        "qualityMetrics": [
+          {
+            "accession": "MS:4000216",
+            "name": "targeted compound retention time deviation quantiles",
+            "value": [
+              0.7172011756899792,0.7599321556091923,0.9032179832458951
+            ],
+            "unit": {
+              "accession": "UO:0000010",
+              "name": "second"
+            }
+          },
+          {
+            "accession": "MS:4000217",
+            "name": "targeted compound signal-to-noise ratio quantiles",
+            "value": [
+              90.14447495880465,175.9776595313772,303.1980206006385
+            ]
+          },
+          {
+            "accession": "MS:4000218",
+            "name": "targeted compound peak width at half-maximum quantiles",
+            "value": [
+              1.2179728746414185,1.2784067392349243,1.357748031616211
+            ],
+            "unit": {
+              "accession": "UO:0000010",
+              "name": "second"
+            }
+          },
+          {
+            "accession": "MS:4000219",
+            "name": "targeted compound intensity mean",
+            "value": 4738436.027777778,
+            "unit": {
+              "accession": "MS:1000043",
+              "name": "intensity unit"
+            }
+          },
+          {
+            "accession": "MS:4000220",
+            "name": "targeted compound retention time deviations",
+            "value": {
+              "MS:4000222": [
+                "n-Nonane","Phenol","n-Decane","n-Undecane","Methyleugenol","Isovanillin","C16-FAME","C17-FAME","C18-FAME"
+            ],
+              "MS:4000223": [
+                0.3956242561339991,1.0464890098572823,0.6488928413391477,0.7599321556091923,0.9032179832458951,1.0019475746154285,0.7650281333923203,0.7172011756899792,0.7451962471006937
+            ]
+            }
+          },
+          {
+            "accession": "MS:4000221",
+            "name": "targeted compound intensities",
+            "value": {
+              "MS:4000222": [
+                "n-Nonane","Phenol","n-Decane","n-Undecane","Methyleugenol","Isovanillin","C16-FAME","C17-FAME","C18-FAME"
+            ],
+              "MS:4000224": [
+                1745774.375,1720590.375,2639813.5,4461791.0,5164369.0,1488909.5,9154725.0,8834055.0,7435896.5
+            ]
+            }
+          }
+        ]
+      }
+    ],
+    "controlledVocabularies": [
+      {
+        "name": "PSI-MS",
+        "uri": "https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo",
+        "version": "4.1.257"
+      }
+    ]
+  }
+}

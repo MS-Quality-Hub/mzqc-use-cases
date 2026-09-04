@@ -1,0 +1,15 @@
+# Dependencies of the GC/MS QC tool (GC_MS_pickPeaks_and_match.py and its gcms_* modules).
+# Install with:  pip install -r py_scripts/requirements.txt
+#
+# Python 3.10+ (developed and tested on 3.12). The comments give the versions the
+# tool is currently tested with.
+
+# mzML reading, TIC, smoothing, peak picking, S/N estimation and RT alignment
+# (gcms_analysis, chromatogram_peak_picker)
+pyopenms>=3.0                 # tested with 3.6.0.dev20260624
+
+# chromatogram plots (gcms_plotting)
+matplotlib>=3.5               # tested with 3.11.0
+
+# mzQC 1.0 reading/writing and validation (gcms_mzqc); imported as 'mzqc'
+pymzqc>=1.0                   # tested with 1.0.1
