@@ -44,7 +44,7 @@ from mzqc.MZQCFile import (
     RunQuality,
 )
 
-PSI_MS_VERSION = "4.2.2"
+PSI_MS_VERSION = "4.2.4"
 PSI_MS_URI = (
     "https://github.com/HUPO-PSI/psi-ms-CV/releases/download/"
     f"v{PSI_MS_VERSION}/psi-ms.obo"
