@@ -24,6 +24,7 @@ download the zenodo data and put it with the code so each use case will be like:
 requirements:
 
 - **python 3** with `numpy`, `pandas`, `scipy`, `matplotlib`, `seaborn`, `openpyxl`, `plotly`
+- **uv** for the imaging use case (installs its own pinned environment)
 - **R** with `jsonlite`, `ggplot2`, `MASS`
 
 
@@ -105,3 +106,30 @@ python mzqc_repository-metabolomics.py
 **output**
 - `metabolomics_repository_qc_mzQC/` - one mzQC file per dataset (example: `MSV000079622.mzqc`, `MTBLS136.mzqc` & `ST002008.mzqc`)
 - `figure3.png` - figure 3
+
+## 5. mass spectrometry imaging
+
+QC metrics for two imzML runs, computed with pyOpenMS: per pixel maps of total ion current, base peak fraction and reference m/z error with their quantiles, plus acquired pixel fraction, duplicate pixel coordinate count and pixel grid dimensions per run.
+
+python environment is pinned in `pyproject.toml`/`uv.lock` (pyOpenMS 3.6.0, pymzqc 1.0.1), [uv](https://docs.astral.sh/uv/) installs it on first run.
+
+**input**
+- `20220425_MouseBrain_male_212G_382x305_Att30_25um.imzml` / `.ibd` - mouse brain, Orbitrap, centroided, METASPACE [`2025-04-27_13h26m30s`](https://metaspace2020.org/dataset/2025-04-27_13h26m30s)
+- `controlspheroids-nonormalization.imzML` / `.ibd` - control spheroids, TOF, profile, PRIDE [PXD013069](https://www.ebi.ac.uk/pride/archive/projects/PXD013069)
+
+**run**
+```bash
+./run.sh ../data/input ../data/output
+```
+which runs `compute_mzqc.py` per dataset and `plot_figures.py` to produce png + pdf of the figure.
+
+the reference ion and search window are set per dataset in `run.sh`:
+
+| dataset | reference ion | window | spectrum type |
+|---|---|---|---|
+| mouse brain | [4DHB−3H₂O+K]⁺ 601.03790 | ±20 ppm | centroid |
+| control spheroids | Angiotensin I [M+H]⁺ 1296.6848 | ±100 ppm | profile |
+
+**output**
+- `20220425_MouseBrain_male_212G_382x305_Att30_25um.mzQC`, `controlspheroids-nonormalization.mzQC` - imaging QC metrics as mzQC
+- `imaging_qc.png`, `imaging_qc.pdf` - Figure 6 of the paper.

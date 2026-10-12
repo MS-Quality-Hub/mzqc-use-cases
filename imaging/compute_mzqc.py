@@ -19,7 +19,7 @@ Two existing psi-ms metrics are emitted alongside them:
 Usage
 -----
     python compute_mzqc.py DATA.imzML --ref-mz 1296.6848 --window-ppm 100 \
-        --spectrum-type profile -o out/DATA.mzQC
+        --spectrum-type profile -o ../data/output/DATA.mzQC
 """
 
 from __future__ import annotations

@@ -7,7 +7,7 @@ file actually contains.
 
 Usage
 -----
-    python plot_figures.py out/A.mzQC out/B.mzQC --out figures/imaging_qc
+    python plot_figures.py ../data/output/A.mzQC ../data/output/B.mzQC --out ../data/output/imaging_qc
 """
 
 from __future__ import annotations
