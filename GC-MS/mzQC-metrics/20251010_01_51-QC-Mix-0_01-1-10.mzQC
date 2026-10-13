@@ -1,0 +1,119 @@
+{
+  "mzQC": {
+    "creationDate": "2026-09-04T09:38:38Z",
+    "version": "1.0.0",
+    "contactName": "GC_MS_pickPeaks_and_match.py",
+    "description": "Quartiles (Q1, Q2, Q3) of delta RT, S/N and FWHM, the mean intensity, the number of detected compounds, and the per-compound delta RT and intensity tables, across targeted/expected GC-QC compounds, per input mzML file.",
+    "runQualities": [
+      {
+        "metadata": {
+          "label": "20251010_01_51-QC-Mix-0_01-1-10.mzML",
+          "inputFiles": [
+            {
+              "location": "file:///group/ag_bsc/bsc_intern/Projects/2026_mzQC_GCMS/MTBLS/Shimadzu_new/20251010_01_51-QC-Mix-0_01-1-10.mzML",
+              "name": "20251010_01_51-QC-Mix-0_01-1-10.mzML",
+              "fileFormat": {
+                "accession": "MS:1000584",
+                "name": "mzML format"
+              }
+            }
+          ],
+          "analysisSoftware": [
+            {
+              "accession": "MS:1000799",
+              "name": "custom unreleased software tool",
+              "value": "GC_MS_pickPeaks_and_match.py",
+              "version": "1.0.0"
+            }
+          ]
+        },
+        "qualityMetrics": [
+          {
+            "accession": "MS:4000241",
+            "name": "targeted compound retention time deviation quantiles",
+            "value": [
+              -1.4420366477966127,-1.3255011558532601,-1.1508796119689464
+            ],
+            "unit": {
+              "accession": "UO:0000010",
+              "name": "second"
+            }
+          },
+          {
+            "accession": "MS:4000242",
+            "name": "targeted compound signal-to-noise ratio quantiles",
+            "value": [
+              113.01145105044576,176.23071935532215,224.41978725393568
+            ]
+          },
+          {
+            "accession": "MS:4000243",
+            "name": "targeted compound peak width at half-maximum quantiles",
+            "value": [
+              1.2850725650787354,1.3637484312057495,1.3875356912612915
+            ],
+            "unit": {
+              "accession": "UO:0000010",
+              "name": "second"
+            }
+          },
+          {
+            "accession": "MS:4000244",
+            "name": "targeted compound intensity mean",
+            "value": 9343930.527777778,
+            "unit": {
+              "accession": "MS:1000043",
+              "name": "intensity unit"
+            }
+          },
+          {
+            "accession": "MS:4000247",
+            "name": "number of detected targeted compounds",
+            "value": 9,
+            "unit": {
+              "accession": "UO:0000189",
+              "name": "count unit"
+            }
+          },
+          {
+            "accession": "MS:4000245",
+            "name": "targeted compound retention time deviations",
+            "value": {
+              "MS:4000238": [
+                "n-Nonane","Phenol","n-Decane","n-Undecane","Methyleugenol","Isovanillin","C16-FAME","C17-FAME","C18-FAME"
+            ],
+              "MS:1000878": [
+                "CHEBI:32892","CHEBI:15882","CHEBI:41808","CHEBI:46342","CHEBI:4918","CHEBI:193161","CHEBI:69187","CHEBI:136920","CHEBI:69188"
+            ],
+              "MS:4000239": [
+                -1.0041552543639796,-1.1508796119689464,-1.080932559966982,-1.214853458404491,-1.3255011558532601,-1.4420366477966127,-1.4292597389220418,-1.5468899345396494,-1.573519229888916
+            ]
+            }
+          },
+          {
+            "accession": "MS:4000246",
+            "name": "targeted compound intensities",
+            "value": {
+              "MS:4000238": [
+                "n-Nonane","Phenol","n-Decane","n-Undecane","Methyleugenol","Isovanillin","C16-FAME","C17-FAME","C18-FAME"
+            ],
+              "MS:1000878": [
+                "CHEBI:32892","CHEBI:15882","CHEBI:41808","CHEBI:46342","CHEBI:4918","CHEBI:193161","CHEBI:69187","CHEBI:136920","CHEBI:69188"
+            ],
+              "MS:4000240": [
+                3796837.75,4390269.5,5859941.0,8973059.0,11155941.0,5567505.5,15603212.0,15181816.0,13566793.0
+            ]
+            }
+          }
+        ]
+      }
+    ],
+    "controlledVocabularies": [
+      {
+        "name": "PSI-MS",
+        "uri": "https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo",
+        "version": "4.2.5"
+      }
+    ]
+  }
+}
