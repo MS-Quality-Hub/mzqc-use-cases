@@ -20,11 +20,10 @@ from typing import Any, NamedTuple, TYPE_CHECKING
 if TYPE_CHECKING:
     from gcms_analysis import MatchResult, RunMetrics
 
-# CV terms for the per-file metrics, in output order. MS:4000216-4000219 are custom
-# terms (see psi-ms.obo, appended at the end of the official CV, pending submission
-# to PSI-MS) since the PSI-MS CV has no existing "across targeted/ID-based compounds"
-# metric for retention time deviation, S/N, FWHM, or intensity -- only ID-free,
-# whole-spectrum variants (e.g. MS:4000122 "MS1 signal-to-noise ratio mean").
+# CV terms for the per-file metrics, in output order. MS:4000238-4000247 are the
+# PSI-MS CV terms for metrics "across targeted/ID-based compounds" (retention time
+# deviation, S/N, FWHM, intensity, number of detected compounds), as opposed to the
+# ID-free, whole-spectrum variants (e.g. MS:4000122 "MS1 signal-to-noise ratio mean").
 #
 # The three distributions are reported as quartile triplets (Q1, Q2, Q3), following
 # the n-tuple pattern of e.g. MS:4000051 "XIC-FWHM quantiles", rather than as
@@ -37,23 +36,27 @@ class CvTerm(NamedTuple):
 
 _SECOND = ('UO:0000010', 'second')
 _INTENSITY = ('MS:1000043', 'intensity unit')
+_COUNT = ('UO:0000189', 'count unit')
 TARGETED_COMPOUND_CV_TERMS: dict[str, CvTerm] = {
-    'delta_rt_quantiles': CvTerm('MS:4000216', 'targeted compound retention time deviation quantiles', _SECOND),
-    'sn_quantiles':       CvTerm('MS:4000217', 'targeted compound signal-to-noise ratio quantiles'),
-    'fwhm_quantiles':     CvTerm('MS:4000218', 'targeted compound peak width at half-maximum quantiles', _SECOND),
-    'mean_intensity':     CvTerm('MS:4000219', 'targeted compound intensity mean', _INTENSITY),
+    'delta_rt_quantiles': CvTerm('MS:4000241', 'targeted compound retention time deviation quantiles', _SECOND),
+    'sn_quantiles':       CvTerm('MS:4000242', 'targeted compound signal-to-noise ratio quantiles'),
+    'fwhm_quantiles':     CvTerm('MS:4000243', 'targeted compound peak width at half-maximum quantiles', _SECOND),
+    'mean_intensity':     CvTerm('MS:4000244', 'targeted compound intensity mean', _INTENSITY),
+    'n_found':            CvTerm('MS:4000247', 'number of detected targeted compounds', _COUNT),
 }
 
 # CV terms for the per-compound table metrics: the metric term itself plus the CV
 # terms naming its columns (mzQC identifies table columns by accession, not by name).
-# The compound names are data, not vocabulary, so any compound list can be reported.
-COMPOUND_NAME_COLUMN = ('MS:4000222', 'targeted compound name')
+# Each compound is identified by its name and its external database identifier (both
+# required columns); they are data, not vocabulary, so any compound list can be reported.
+COMPOUND_NAME_COLUMN = ('MS:4000238', 'targeted compound name')
+COMPOUND_EXTERNAL_ID_COLUMN = ('MS:1000878', 'external reference identifier')
 TARGETED_COMPOUND_TABLE_CV_TERMS: dict[str, tuple[CvTerm, CvTerm]] = {
     # match key -> (table metric term, value column term)
-    'delta_rt':  (CvTerm('MS:4000220', 'targeted compound retention time deviations'),
-                  CvTerm('MS:4000223', 'targeted compound retention time deviation', _SECOND)),
-    'intensity': (CvTerm('MS:4000221', 'targeted compound intensities'),
-                  CvTerm('MS:4000224', 'targeted compound intensity', _INTENSITY)),
+    'delta_rt':  (CvTerm('MS:4000245', 'targeted compound retention time deviations'),
+                  CvTerm('MS:4000239', 'targeted compound retention time deviation', _SECOND)),
+    'intensity': (CvTerm('MS:4000246', 'targeted compound intensities'),
+                  CvTerm('MS:4000240', 'targeted compound intensity', _INTENSITY)),
 }
 
 class SoftwareInfo(NamedTuple):
@@ -81,6 +84,7 @@ def _table_metrics(matches: list[MatchResult], mzqc: Any) -> list[Any]:
             accession=table_term.accession,
             name=table_term.name,
             value={COMPOUND_NAME_COLUMN[0]: [row['compound_name'] for row in rows],
+                   COMPOUND_EXTERNAL_ID_COLUMN[0]: [row['external_id'] for row in rows],
                    value_term.accession: [row[key] for row in rows]},  # type: ignore[literal-required]
         ))
     return quality_metrics
@@ -93,17 +97,18 @@ def write_mzqc(file_metrics: list[tuple[str | Path, RunMetrics, list[MatchResult
     reporting per file:
       - the run-level aggregates of TARGETED_COMPOUND_CV_TERMS: the quartiles of
         delta RT, S/N and FWHM (as n-tuple metrics) and the mean intensity across
-        the matched compounds. Aggregates that are None (no compound matched in
-        that file, or fewer than 2 for the quartiles) are omitted rather than
-        written as null.
+        the matched compounds, and the number of matched compounds. Aggregates that
+        are None (no compound matched in that file, or fewer than 2 for the
+        quartiles) are omitted rather than written as null.
       - the per-compound tables of TARGETED_COMPOUND_TABLE_CV_TERMS: delta RT and
-        intensity per compound, with the compound names in their own column.
+        intensity per compound, with the compound names and external database
+        identifiers in their own columns.
 
     Args:
         file_metrics: list of (input_path, metrics, matches) tuples, where `metrics`
             is the dict returned by compute_run_metrics (keys
-            'delta_rt_quantiles', 'sn_quantiles', 'fwhm_quantiles', 'mean_intensity')
-            and `matches` are that file's per-compound MatchResults
+            'delta_rt_quantiles', 'sn_quantiles', 'fwhm_quantiles', 'mean_intensity',
+            'n_found') and `matches` are that file's per-compound MatchResults
         software: the tool that computed the metrics, reported as the required
             'analysisSoftware' metadata of every run
     """
@@ -113,7 +118,7 @@ def write_mzqc(file_metrics: list[tuple[str | Path, RunMetrics, list[MatchResult
     cv = mzqc.ControlledVocabulary(
         name='PSI-MS',
         uri='https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo',
-        version='4.1.257',
+        version='4.2.5',  # first release with MS:4000238-4000247
     )
 
     analysis_software = mzqc.AnalysisSoftware(
@@ -157,11 +162,9 @@ def write_mzqc(file_metrics: list[tuple[str | Path, RunMetrics, list[MatchResult
     mzqc_file = mzqc.MzQcFile(
         contactName='GC_MS_pickPeaks_and_match.py',
         description=(
-            'Quartiles (Q1, Q2, Q3) of delta RT, S/N and FWHM, the mean intensity, and '
-            'the per-compound delta RT and intensity tables, across targeted/expected '
-            'GC-QC compounds, per input mzML file. Uses custom CV terms MS:4000216-'
-            'MS:4000224, appended to the copy of psi-ms.obo in this project\'s analysis/ '
-            'folder pending official PSI-MS submission.'
+            'Quartiles (Q1, Q2, Q3) of delta RT, S/N and FWHM, the mean intensity, the '
+            'number of detected compounds, and the per-compound delta RT and intensity '
+            'tables, across targeted/expected GC-QC compounds, per input mzML file.'
         ),
         runQualities=run_qualities,
         controlledVocabularies=[cv],

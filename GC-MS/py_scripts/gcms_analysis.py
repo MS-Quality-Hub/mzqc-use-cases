@@ -8,7 +8,7 @@ on its own:
 
     from gcms_analysis import load_expected_compounds, analyze_mzml
 
-    compounds = load_expected_compounds('compounds.csv')   # name -> RT in seconds
+    compounds = load_expected_compounds('compounds.csv')   # name -> (RT in seconds, external ID)
     analysis = analyze_mzml('sample.mzML', compounds)
     print(analysis.metrics['n_found'], analysis.metrics['sn_quantiles'])
 
@@ -48,9 +48,15 @@ class PeakInfo(TypedDict):
     fwhm: float | None
     sn: float
 
+class ExpectedCompound(NamedTuple):
+    """One expected (target) compound of the compound list, which is keyed by name."""
+    rt: float           # expected retention time, in seconds
+    external_id: str    # identifier in an external database, e.g. 'CHEBI:15882'
+
 class MatchResult(TypedDict):
     """One expected compound matched (or not) against a picked peak."""
     compound_name: str
+    external_id: str
     expected_rt: float
     observed_rt: float | None
     delta_rt: float | None
@@ -80,9 +86,11 @@ class FileAnalysis(NamedTuple):
     matches: list[MatchResult]            # one entry per expected compound ([] if no peak was picked)
     metrics: RunMetrics                   # run-level summary of `matches`
 
-# Column layout of the compound list CSV: a name column plus exactly one RT column,
-# which fixes the unit. Comment (#) and blank lines are ignored.
+# Column layout of the compound list CSV: a name column, an external database
+# identifier column (required by the mzQC per-compound tables, see gcms_mzqc) plus
+# exactly one RT column, which fixes the unit. Comment (#) and blank lines are ignored.
 COMPOUND_NAME_COLUMN = 'compound_name'
+COMPOUND_EXTERNAL_ID_COLUMN = 'external_id'
 COMPOUND_RT_COLUMNS: dict[str, float] = {  # column name -> factor converting it to seconds
     'rt_seconds': 1.0,
     'rt_minutes': 60.0,
@@ -90,12 +98,13 @@ COMPOUND_RT_COLUMNS: dict[str, float] = {  # column name -> factor converting it
 COMPOUNDS_TEMPLATE = """\
 # Expected (target) compounds for GC/MS QC, one per line.
 #
-# Required columns: '{name_col}' and exactly one of '{rt_cols}',
-# which determines the retention time unit. Lines starting with '#' are ignored.
+# Required columns: '{name_col}', '{id_col}' and exactly one of '{rt_cols}',
+# which determines the retention time unit. '{id_col}' is the compound's identifier
+# in an external database, e.g. a ChEBI accession. Lines starting with '#' are ignored.
 # Replace the two example compounds below with your own.
-{name_col},rt_minutes
-n-Nonane,3.103
-Phenol,3.5
+{name_col},{id_col},rt_minutes
+n-Nonane,CHEBI:32892,3.103
+Phenol,CHEBI:15882,3.5
 """
 
 def write_compounds_template(output_filename: str | Path) -> None:
@@ -105,24 +114,28 @@ def write_compounds_template(output_filename: str | Path) -> None:
     """
     with open(output_filename, 'w', newline='') as f:
         f.write(COMPOUNDS_TEMPLATE.format(name_col=COMPOUND_NAME_COLUMN,
+                                          id_col=COMPOUND_EXTERNAL_ID_COLUMN,
                                           rt_cols="', '".join(COMPOUND_RT_COLUMNS)))
 
-def load_expected_compounds(filename: str | Path) -> dict[str, float]:
+def load_expected_compounds(filename: str | Path) -> dict[str, ExpectedCompound]:
     """
     Read the expected (target) compounds from a CSV file.
 
-    The file needs a header with a '<COMPOUND_NAME_COLUMN>' column and exactly one
-    retention time column from COMPOUND_RT_COLUMNS ('rt_seconds' or 'rt_minutes'),
-    which fixes the unit of all RTs. Blank lines and lines starting with '#' are
-    ignored, so the file can carry comments (see write_compounds_template).
+    The file needs a header with a '<COMPOUND_NAME_COLUMN>' column, a
+    '<COMPOUND_EXTERNAL_ID_COLUMN>' column (the compound's identifier in an external
+    database, e.g. a ChEBI accession) and exactly one retention time column from
+    COMPOUND_RT_COLUMNS ('rt_seconds' or 'rt_minutes'), which fixes the unit of all
+    RTs. Blank lines and lines starting with '#' are ignored, so the file can carry
+    comments (see write_compounds_template).
 
     Returns:
-        Dict mapping compound name -> expected RT in *seconds* (the unit used
-        throughout this module, as in pyOpenMS).
+        Dict mapping compound name -> ExpectedCompound, with the expected RT in
+        *seconds* (the unit used throughout this module, as in pyOpenMS).
 
     Raises:
-        ValueError: on a missing/ambiguous header, an unparsable or negative RT,
-        a duplicate compound name, or an empty compound list.
+        ValueError: on a missing/ambiguous header, an empty compound name or
+        external ID, an unparsable or negative RT, a duplicate compound name, or
+        an empty compound list.
     """
     filename = Path(filename)
     with open(filename, newline='') as f:
@@ -130,9 +143,10 @@ def load_expected_compounds(filename: str | Path) -> dict[str, float]:
 
     reader = csv.DictReader(rows)
     columns = reader.fieldnames or []
-    if COMPOUND_NAME_COLUMN not in columns:
-        raise ValueError(f"{filename}: missing required column '{COMPOUND_NAME_COLUMN}' "
-                         f"(found: {', '.join(columns) or 'nothing'})")
+    for column in (COMPOUND_NAME_COLUMN, COMPOUND_EXTERNAL_ID_COLUMN):
+        if column not in columns:
+            raise ValueError(f"{filename}: missing required column '{column}' "
+                             f"(found: {', '.join(columns) or 'nothing'})")
     rt_columns = [c for c in columns if c in COMPOUND_RT_COLUMNS]
     if len(rt_columns) != 1:
         raise ValueError(f"{filename}: expected exactly one retention time column "
@@ -141,14 +155,17 @@ def load_expected_compounds(filename: str | Path) -> dict[str, float]:
     rt_column = rt_columns[0]
     to_seconds = COMPOUND_RT_COLUMNS[rt_column]
 
-    compounds: dict[str, float] = {}
+    compounds: dict[str, ExpectedCompound] = {}
     for line_no, row in enumerate(reader, start=2):
         name = (row[COMPOUND_NAME_COLUMN] or '').strip()
+        external_id = (row[COMPOUND_EXTERNAL_ID_COLUMN] or '').strip()
         raw_rt = (row[rt_column] or '').strip()
         if not name:
             raise ValueError(f"{filename}, compound {line_no - 1}: empty compound name")
         if name in compounds:
             raise ValueError(f"{filename}, compound {line_no - 1}: duplicate compound name '{name}'")
+        if not external_id:
+            raise ValueError(f"{filename}, compound '{name}': empty {COMPOUND_EXTERNAL_ID_COLUMN}")
         try:
             rt = float(raw_rt)
         except ValueError:
@@ -156,7 +173,7 @@ def load_expected_compounds(filename: str | Path) -> dict[str, float]:
                              f"'{raw_rt}' is not a valid {rt_column} value") from None
         if rt < 0:
             raise ValueError(f"{filename}, compound '{name}': negative retention time {rt}")
-        compounds[name] = rt * to_seconds
+        compounds[name] = ExpectedCompound(rt=rt * to_seconds, external_id=external_id)
 
     if not compounds:
         raise ValueError(f"{filename}: no compounds found")
@@ -183,7 +200,7 @@ def _rt_spectrum(rts: list[float]) -> MSSpectrum:
     return spectrum
 
 def match_peaks_to_expected(
-    expected_compounds: dict[str, float],
+    expected_compounds: dict[str, ExpectedCompound],
     observed_peaks: list[PeakInfo],
     rt_tolerance: float,
     rt_bias: float = 0.0,
@@ -196,15 +213,15 @@ def match_peaks_to_expected(
     leaving spurious observed peaks and missing compounds unmatched.
 
     Args:
-        expected_compounds: Dict mapping compound name -> expected RT (seconds)
+        expected_compounds: Dict mapping compound name -> ExpectedCompound (RT in seconds)
         rt_bias: seconds added to each expected RT before aligning (e.g. to correct
             a systematic RT drift). The reported 'delta_rt' stays relative to the
             true (unbiased) expected_rt.
 
     Returns:
-        List of dictionaries with: 'compound_name', 'expected_rt', 'observed_rt', 'delta_rt', 'intensity', 'fwhm', 'sn'
+        List of dictionaries with: 'compound_name', 'external_id', 'expected_rt', 'observed_rt', 'delta_rt', 'intensity', 'fwhm', 'sn'
     """
-    names_and_rts = sorted(expected_compounds.items(), key=lambda kv: kv[1])
+    names_and_compounds = sorted(expected_compounds.items(), key=lambda kv: kv[1].rt)
     observed_peaks = sorted(observed_peaks, key=lambda p: p['rt'])
 
     aligner = SpectrumAlignment()
@@ -213,18 +230,19 @@ def match_peaks_to_expected(
     params.setValue("is_relative_tolerance", "false")
     aligner.setParameters(params)
 
-    theoretical_spectrum = _rt_spectrum([expected_rt + rt_bias for _, expected_rt in names_and_rts])
+    theoretical_spectrum = _rt_spectrum([compound.rt + rt_bias for _, compound in names_and_compounds])
     observed_spectrum = _rt_spectrum([peak['rt'] for peak in observed_peaks])
     matched_obs_idx = dict(aligner.getSpectrumAlignment(theoretical_spectrum, observed_spectrum))
 
     results: list[MatchResult] = []
-    for i, (name, expected_rt) in enumerate(names_and_rts):
+    for i, (name, compound) in enumerate(names_and_compounds):
         peak = observed_peaks[matched_obs_idx[i]] if i in matched_obs_idx else None
         results.append({
             'compound_name': name,
-            'expected_rt': expected_rt,
+            'external_id': compound.external_id,
+            'expected_rt': compound.rt,
             'observed_rt': peak['rt'] if peak else None,
-            'delta_rt': (peak['rt'] - expected_rt) if peak else None,
+            'delta_rt': (peak['rt'] - compound.rt) if peak else None,
             'intensity': peak['intensity'] if peak else None,
             'fwhm': peak['fwhm'] if peak else None,
             'sn': peak['sn'] if peak else None,
@@ -233,7 +251,7 @@ def match_peaks_to_expected(
     return results
 
 def match_with_rt_bias_correction(
-    expected_compounds: dict[str, float],
+    expected_compounds: dict[str, ExpectedCompound],
     observed_peaks: list[PeakInfo],
     rt_tolerance_bias_estimation: float = 6.0,
     rt_tolerance: float = 3.0,
@@ -288,7 +306,7 @@ def compute_run_metrics(results: list[MatchResult]) -> RunMetrics:
 
 def analyze_chromatogram(
     chromatogram: MSChromatogram,
-    expected_compounds: dict[str, float],
+    expected_compounds: dict[str, ExpectedCompound],
 ) -> FileAnalysis:
     """
     Pick the peaks of a chromatogram, match them against the expected compounds
@@ -296,8 +314,8 @@ def analyze_chromatogram(
 
     Args:
         chromatogram: the chromatogram to analyze (typically a TIC)
-        expected_compounds: dict mapping compound name -> expected RT (seconds),
-            as returned by load_expected_compounds
+        expected_compounds: dict mapping compound name -> ExpectedCompound (RT in
+            seconds), as returned by load_expected_compounds
 
     Returns:
         A FileAnalysis. If no peak could be picked at all, its `matches` are empty
@@ -314,7 +332,7 @@ def analyze_chromatogram(
         metrics=compute_run_metrics(matches),
     )
 
-def analyze_mzml(filename: str | Path, expected_compounds: dict[str, float]) -> FileAnalysis:
+def analyze_mzml(filename: str | Path, expected_compounds: dict[str, ExpectedCompound]) -> FileAnalysis:
     """
     Read an mzML file, compute its TIC and analyze it (see analyze_chromatogram).
 

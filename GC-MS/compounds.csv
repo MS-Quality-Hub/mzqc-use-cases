@@ -1,0 +1,15 @@
+# Expected (target) compounds for GC/MS QC, one per line.
+#
+# Required columns: 'compound_name', 'external_id' and exactly one of 'rt_seconds', 'rt_minutes',
+# which determines the retention time unit. 'external_id' is the compound's identifier
+# in an external database, e.g. a ChEBI accession. Lines starting with '#' are ignored.
+compound_name,external_id,rt_seconds
+n-Nonane,CHEBI:32892,226.95
+Phenol,CHEBI:15882,264.39
+n-Decane,CHEBI:41808,273.19
+n-Undecane,CHEBI:46342,317.88
+Methyleugenol,CHEBI:4918,436.75
+Isovanillin,CHEBI:193161,460.47
+C16-FAME,CHEBI:69187,595.91
+C17-FAME,CHEBI:136920,621.96
+C18-FAME,CHEBI:69188,646.75

@@ -60,8 +60,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                         help="one or more input mzML files")
     parser.add_argument('-compounds', '-c', '--compounds', default=DEFAULT_COMPOUNDS_FILE,
                         metavar='COMPOUNDS',
-                        help="CSV file listing the expected compounds and their retention times "
-                             "(columns 'compound_name' plus 'rt_minutes' or 'rt_seconds') "
+                        help="CSV file listing the expected compounds, their external database "
+                             "identifiers and retention times (columns 'compound_name', "
+                             "'external_id' plus 'rt_minutes' or 'rt_seconds') "
                              "(default: %(default)s)")
     parser.add_argument('--write-compounds-template', nargs='?', const=True, default=None,
                         metavar='PATH',

@@ -3,12 +3,13 @@ library(rmzqc)
 library(reshape2)
 
 ## The per-compound values are stored as one table metric per run (one column of
-## compound names, one column of values), see the CV terms below.
-ACC_DELTA_RT_TABLE  = "MS:4000220"  # targeted compound retention time deviations (metric)
-ACC_INTENSITY_TABLE = "MS:4000221"  # targeted compound intensities (metric)
-ACC_COMPOUND_NAME   = "MS:4000222"  # targeted compound name (column)
-ACC_DELTA_RT        = "MS:4000223"  # targeted compound retention time deviation (column)
-ACC_INTENSITY       = "MS:4000224"  # targeted compound intensity (column)
+## compound names, one of external database identifiers, one of values), see the
+## PSI-MS CV terms below.
+ACC_DELTA_RT_TABLE  = "MS:4000245"  # targeted compound retention time deviations (metric)
+ACC_INTENSITY_TABLE = "MS:4000246"  # targeted compound intensities (metric)
+ACC_COMPOUND_NAME   = "MS:4000238"  # targeted compound name (column)
+ACC_DELTA_RT        = "MS:4000239"  # targeted compound retention time deviation (column)
+ACC_INTENSITY       = "MS:4000240"  # targeted compound intensity (column)
 
 MZQC_DIR = "./mzQC-metrics/"
 

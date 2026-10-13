@@ -3,7 +3,7 @@
     "creationDate": "2026-09-04T09:38:38Z",
     "version": "1.0.0",
     "contactName": "GC_MS_pickPeaks_and_match.py",
-    "description": "Quartiles (Q1, Q2, Q3) of delta RT, S/N and FWHM, the mean intensity, and the per-compound delta RT and intensity tables, across targeted/expected GC-QC compounds, per input mzML file. Uses custom CV terms MS:4000216-MS:4000224, appended to the copy of psi-ms.obo in this project's analysis/ folder pending official PSI-MS submission.",
+    "description": "Quartiles (Q1, Q2, Q3) of delta RT, S/N and FWHM, the mean intensity, the number of detected compounds, and the per-compound delta RT and intensity tables, across targeted/expected GC-QC compounds, per input mzML file.",
     "runQualities": [
       {
         "metadata": {
@@ -29,7 +29,7 @@
         },
         "qualityMetrics": [
           {
-            "accession": "MS:4000216",
+            "accession": "MS:4000241",
             "name": "targeted compound retention time deviation quantiles",
             "value": [
               0.9818971824645928,1.0492611885072165,1.1655755043029217
@@ -40,14 +40,14 @@
             }
           },
           {
-            "accession": "MS:4000217",
+            "accession": "MS:4000242",
             "name": "targeted compound signal-to-noise ratio quantiles",
             "value": [
               87.28729299895672,230.52228555847648,518.1650496105497
             ]
           },
           {
-            "accession": "MS:4000218",
+            "accession": "MS:4000243",
             "name": "targeted compound peak width at half-maximum quantiles",
             "value": [
               1.1321327686309814,1.2526495456695557,1.394913673400879
@@ -58,7 +58,7 @@
             }
           },
           {
-            "accession": "MS:4000219",
+            "accession": "MS:4000244",
             "name": "targeted compound intensity mean",
             "value": 2826891.9583333335,
             "unit": {
@@ -67,25 +67,40 @@
             }
           },
           {
-            "accession": "MS:4000220",
+            "accession": "MS:4000247",
+            "name": "number of detected targeted compounds",
+            "value": 9,
+            "unit": {
+              "accession": "UO:0000189",
+              "name": "count unit"
+            }
+          },
+          {
+            "accession": "MS:4000245",
             "name": "targeted compound retention time deviations",
             "value": {
-              "MS:4000222": [
+              "MS:4000238": [
                 "n-Nonane","Phenol","n-Decane","n-Undecane","Methyleugenol","Isovanillin","C16-FAME","C17-FAME","C18-FAME"
             ],
-              "MS:4000223": [
+              "MS:1000878": [
+                "CHEBI:32892","CHEBI:15882","CHEBI:41808","CHEBI:46342","CHEBI:4918","CHEBI:193161","CHEBI:69187","CHEBI:136920","CHEBI:69188"
+            ],
+              "MS:4000239": [
                 0.635500431060791,1.2693592643738043,0.8621758079529513,0.9818971824645928,1.1655755043029217,1.2227407264708745,1.0776458168030558,1.0106946372984567,1.0492611885072165
             ]
             }
           },
           {
-            "accession": "MS:4000221",
+            "accession": "MS:4000246",
             "name": "targeted compound intensities",
             "value": {
-              "MS:4000222": [
+              "MS:4000238": [
                 "n-Nonane","Phenol","n-Decane","n-Undecane","Methyleugenol","Isovanillin","C16-FAME","C17-FAME","C18-FAME"
             ],
-              "MS:4000224": [
+              "MS:1000878": [
+                "CHEBI:32892","CHEBI:15882","CHEBI:41808","CHEBI:46342","CHEBI:4918","CHEBI:193161","CHEBI:69187","CHEBI:136920","CHEBI:69188"
+            ],
+              "MS:4000240": [
                 736391.875,976568.4375,1157290.0,2189310.0,2971764.75,973224.0625,5878694.0,5709247.0,4849537.5
             ]
             }
@@ -97,7 +112,7 @@
       {
         "name": "PSI-MS",
         "uri": "https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo",
-        "version": "4.1.257"
+        "version": "4.2.5"
       }
     ]
   }
