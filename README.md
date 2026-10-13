@@ -4,14 +4,14 @@ These scripts reproduce the mzQC files and figures for the use cases in the manu
 
 - **Code:** this github repository (https://github.com/MS-Quality-Hub/mzqc-use-cases)
 - **Data:** zenodo, DOI [10.5281/zenodo.22959481](https://doi.org/10.5281/zenodo.22959481) and each use case has two folders on zenodo:
-  - `input/` - files the script read
-  - `output/` - mzQC files and figures the script produce
+  - `input/` - files the script reads
+  - `output/` - mzQC files and figures the script produces
 
 running the code of each use case on its `input/` folder will produce files of its `output/` folder
 
-## setup
+## Setup
 
-download the zenodo data and put it with the code so each use case will be like:
+Download the zenodo data and put it with the code so each use case will be like:
 
 ```
 <use-case>/
@@ -21,12 +21,11 @@ download the zenodo data and put it with the code so each use case will be like:
     └── output/    #created by running related code but also available from zenodo
 ```
 
-requirements:
+Requirements:
 
-- **python 3** with `numpy`, `pandas`, `scipy`, `matplotlib`, `seaborn`, `openpyxl`, `plotly`
+- **python 3** with `numpy`, `pandas`, `scipy`, `matplotlib`, `seaborn`, `openpyxl`, `plotly` (or see requirements.txt in the respective folders)
 - **uv** for the imaging use case (installs its own pinned environment)
 - **R** with `jsonlite`, `ggplot2`, `MASS`
-
 
 ## 1.proteogenomics outliers (figure 1)
 
@@ -107,7 +106,11 @@ python mzqc_repository-metabolomics.py
 - `metabolomics_repository_qc_mzQC/` - one mzQC file per dataset (example: `MSV000079622.mzqc`, `MTBLS136.mzqc` & `ST002008.mzqc`)
 - `figure3.png` - figure 3
 
-## 5. mass spectrometry imaging
+## 5. GC-MS instrument monitoring
+
+See [gc-ms/readme.md](gc-ms/readme.md)  (Figure 5).
+
+## 6. mass spectrometry imaging
 
 QC metrics for two imzML runs, computed with pyOpenMS: per pixel maps of total ion current, base peak fraction and reference m/z error with their quantiles, plus acquired pixel fraction, duplicate pixel coordinate count and pixel grid dimensions per run.
 

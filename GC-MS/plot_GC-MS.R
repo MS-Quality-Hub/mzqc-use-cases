@@ -1,6 +1,19 @@
-library(ggplot2)
-library(rmzqc)
-library(reshape2)
+## Install missing packages from CRAN, then load all of them. They go into the
+## personal library, which a fresh R installation does not have yet (and the
+## system-wide one is usually not writable).
+REQUIRED_PACKAGES = c("ggplot2", "rmzqc", "reshape2")
+missing_packages = REQUIRED_PACKAGES[!sapply(REQUIRED_PACKAGES, requireNamespace, quietly = TRUE)]
+if (length(missing_packages) > 0) {
+  user_lib = strsplit(Sys.getenv("R_LIBS_USER"), .Platform$path.sep)[[1]][1]
+  dir.create(user_lib, recursive = TRUE, showWarnings = FALSE)
+  .libPaths(c(user_lib, .libPaths()))
+  ## use the configured CRAN mirror, if any (Rscript has none by default)
+  repos = getOption("repos", c(CRAN = "@CRAN@"))
+  if (is.na(repos["CRAN"]) || repos["CRAN"] == "@CRAN@") repos["CRAN"] = "https://cloud.r-project.org"
+  cat("Installing missing R package(s) into", user_lib, ":", paste(missing_packages, collapse = ", "), "\n")
+  install.packages(missing_packages, lib = user_lib, repos = repos)
+}
+for (pkg in REQUIRED_PACKAGES) library(pkg, character.only = TRUE)
 
 ## The per-compound values are stored as one table metric per run (one column of
 ## compound names, one of external database identifiers, one of values), see the
