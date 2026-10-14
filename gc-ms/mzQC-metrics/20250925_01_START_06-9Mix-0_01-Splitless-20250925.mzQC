@@ -10,7 +10,7 @@
           "label": "20250925_01_START_06-9Mix-0_01-Splitless-20250925.mzML",
           "inputFiles": [
             {
-              "location": "file:///group/ag_bsc/bsc_intern/Projects/2026_mzQC_GCMS/MTBLS/Shimadzu_new/20250925_01_START_06-9Mix-0_01-Splitless-20250925.mzML",
+              "location": "https://ftp.ebi.ac.uk/pub/databases/metabolights/studies/public/MTBLS4827/FILES/DERIVED_FILES/20250925_01_START_06-9Mix-0_01-Splitless-20250925.mzML",
               "name": "20250925_01_START_06-9Mix-0_01-Splitless-20250925.mzML",
               "fileFormat": {
                 "accession": "MS:1000584",
@@ -111,7 +111,7 @@
     "controlledVocabularies": [
       {
         "name": "PSI-MS",
-        "uri": "https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo",
+        "uri": "https://github.com/HUPO-PSI/psi-ms-CV/releases/download/v4.2.5/psi-ms.obo",
         "version": "4.2.5"
       }
     ]
