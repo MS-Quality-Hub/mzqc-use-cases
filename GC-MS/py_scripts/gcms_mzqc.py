@@ -16,9 +16,25 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, NamedTuple, TYPE_CHECKING
+from urllib.parse import quote
 
 if TYPE_CHECKING:
     from gcms_analysis import MatchResult, RunMetrics
+
+# The PSI-MS CV release the written files refer to: the first one that contains the
+# targeted compound terms MS:4000238-4000247 used below.
+PSI_MS_VERSION = '4.2.5'
+PSI_MS_URI = (
+    'https://github.com/HUPO-PSI/psi-ms-CV/releases/download/'
+    f'v{PSI_MS_VERSION}/psi-ms.obo'
+)
+
+# Where the input mzML files are publicly available (MetaboLights study MTBLS4827):
+# each input file's mzQC 'location' is this prefix followed by its file name.
+INPUT_FILE_LOCATION_PREFIX = (
+    'https://ftp.ebi.ac.uk/pub/databases/metabolights/studies/public/'
+    'MTBLS4827/FILES/DERIVED_FILES/'
+)
 
 # CV terms for the per-file metrics, in output order. MS:4000238-4000247 are the
 # PSI-MS CV terms for metrics "across targeted/ID-based compounds" (retention time
@@ -91,7 +107,8 @@ def _table_metrics(matches: list[MatchResult], mzqc: Any) -> list[Any]:
 
 def write_mzqc(file_metrics: list[tuple[str | Path, RunMetrics, list[MatchResult]]],
                 output_filename: str | Path,
-                software: SoftwareInfo = DEFAULT_SOFTWARE) -> None:
+                software: SoftwareInfo = DEFAULT_SOFTWARE,
+                location_prefix: str = INPUT_FILE_LOCATION_PREFIX) -> None:
     """
     Write an mzQC file (via pymzqc) with one RunQuality per processed mzML file,
     reporting per file:
@@ -111,15 +128,14 @@ def write_mzqc(file_metrics: list[tuple[str | Path, RunMetrics, list[MatchResult
             'n_found') and `matches` are that file's per-compound MatchResults
         software: the tool that computed the metrics, reported as the required
             'analysisSoftware' metadata of every run
+        location_prefix: URL the input file names are appended to for their mzQC
+            'location' (rather than the local path, which is of no use to others),
+            i.e. where the input files are publicly available
     """
     import json
     from mzqc import MZQCFile as mzqc
 
-    cv = mzqc.ControlledVocabulary(
-        name='PSI-MS',
-        uri='https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo',
-        version='4.2.5',  # first release with MS:4000238-4000247
-    )
+    cv = mzqc.ControlledVocabulary(name='PSI-MS', uri=PSI_MS_URI, version=PSI_MS_VERSION)
 
     analysis_software = mzqc.AnalysisSoftware(
         accession=software.accession, name=software.cv_name, value=software.name,
@@ -129,7 +145,7 @@ def write_mzqc(file_metrics: list[tuple[str | Path, RunMetrics, list[MatchResult
     run_qualities: list[Any] = []
     for input_path, metrics, matches in file_metrics:
         input_file = mzqc.InputFile(
-            location=Path(input_path).resolve().as_uri(),
+            location=location_prefix + quote(Path(input_path).name),
             name=Path(input_path).name,
             fileFormat=mzqc.CvParameter(accession='MS:1000584', name='mzML format'),
         )
