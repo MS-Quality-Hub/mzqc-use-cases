@@ -59,7 +59,7 @@ MSstatsQC river plot for the CPTAC study 9.1, site 65 system suitability runs
 
 **run**
 ```bash
-Rscript longitudinal-system-suitability.R ../data/input/Study_9_1_Site_65.csv ../data/output/longitudinal-system-suitability.png
+Rscript longitudinal-system-suitability.R ../data/input/Study9_1_Site_65.mzqc ../data/output/longitudinal-system-suitability.png
 ```
 
 **output**
