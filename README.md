@@ -25,7 +25,7 @@ Download the zenodo data and put it with the code so each use case will be like:
 
 **Operating system.** All scripts run on a standard desktop or laptop with Windows, macOS or Linux. They use only Python and R and their packages which are available for all three systems as ready-made installs, so nothing has to be compiled. No GPU, server or other special hardware is needed.
 
-Requirements:
+## Requirements
 
 - **python 3** with `numpy`, `pandas`, `scipy`, `matplotlib`, `seaborn`, `openpyxl`, `plotly` (or see requirements.txt in the respective folders)
 - **uv** for the imaging use case (installs its own pinned environment)
