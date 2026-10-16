@@ -55,6 +55,7 @@ MSstatsQC river plot for the CPTAC study 9.1, site 65 system suitability runs
 **input**
 - `Study_9_1_Site_65.csv` - Skyline derived peptide metrics per run (acquisition time, precursor, retention time, peak area, FWHM, peak start/end)
 - `Study9.1_Site65SSS_runs_QCED_.../` - Skyline document the metrics were exported from
+- `Study9_1_Site_65.mzqc`
 
 **run**
 ```bash
@@ -63,7 +64,6 @@ Rscript longitudinal-system-suitability.R ../data/input/Study_9_1_Site_65.csv ..
 
 **output**
 - `longitudinal-system-suitability.png` - figure 2
-- `Study9_1_Site_65.mzqc`, `longitudinal-system-suitability.mzqc` - the peptide level QC metrics
 
 
 ## 3. DIA method evaluation (supplementary figure 1)
