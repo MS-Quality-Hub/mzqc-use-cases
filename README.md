@@ -23,7 +23,7 @@ Download the zenodo data and put it with the code so each use case will be like:
 
 ## System requirements
 
-**Operating system.** All scripts run on a standard desktop or laptop with Windows, macOS or Linux. They use only Python and R and their packages which are available for all three systems as ready-made installs, so nothing has to be compiled. No GPU, server or other special hardware is needed.
+**Operating system.** All scripts run on a standard desktop or laptop with Windows, macOS or Linux. They use only Python and R and their packages which are available for all three systems as ready made installs, so nothing has to be compiled. No GPU, server or other special hardware is needed.
 
 ## Requirements
 
