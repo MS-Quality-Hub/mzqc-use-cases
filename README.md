@@ -31,6 +31,8 @@ Download the zenodo data and put it with the code so each use case will be like:
 - **uv** for the imaging use case (installs its own pinned environment)
 - **R** with `jsonlite`, `ggplot2`, `MASS`
 
+**Python version** Python 3.10 or later. Scripts were tested with Python 3.12.
+
 ## 1.proteogenomics outliers (figure 1)
 
 outlier detection (LoOP and robust PCA) on 120 DDA runs of M. tuberculosis dataset (MSV000081205 / PXD006843)
