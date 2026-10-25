@@ -2,19 +2,19 @@ USE_PACKAGE <- FALSE
 
 X_AXIS_LABEL       <- "MS run acquisition order"
 Y_AXIS_LABEL       <- "proportion of out of control \npeptides"
-Y_LIMITS           <- c(-1.4, 1.4)   
-Y_LABEL_UPPER      <- "Increase"     
-Y_LABEL_LOWER      <- "Decrease"     
-Y_LABEL_SIDE       <- "right"        
-Y_LABEL_OFFSET     <- 0.75           
-Y_LABEL_ANGLE      <- 0              
-Y_LABEL_SIZE       <- 14             
-Y_LABEL_PAD        <- 0.9            
-Y_LABEL_WIDTH      <- 1.4            
-PANEL_LABEL_UPPER  <- "Mean"         
-PANEL_LABEL_LOWER  <- "Variability"  
-PANEL_LABEL_Y      <- 1.25           
-PANEL_LABEL_HJUST  <- 0              
+Y_LIMITS           <- c(-1.4, 1.4)
+Y_LABEL_UPPER      <- "Increase"
+Y_LABEL_LOWER      <- "Decrease"
+Y_LABEL_SIDE       <- "left"
+Y_LABEL_OFFSET     <- 0.75
+Y_LABEL_ANGLE      <- 90
+Y_LABEL_SIZE       <- 14
+Y_LABEL_PAD        <- 0.9
+Y_LABEL_WIDTH      <- 1.4
+PANEL_LABEL_UPPER  <- "Mean"
+PANEL_LABEL_LOWER  <- "Variability"
+PANEL_LABEL_Y      <- 1.25
+PANEL_LABEL_HJUST  <- 0
 PANEL_LABEL_SIZE   <- 4.8
 
 
@@ -22,18 +22,58 @@ SIGN_BY_DIRECTION <- FALSE
 
 
 PALETTE <- c(
-  "Mean increase"        = "#eb861e", 
-  "Mean decrease"        = "#6da7de", 
-  "Variability increase" = "#5ea15d",  
-  "Variability decrease" = "#d82222",  
+  "Mean increase"        = "#eb861e",
+  "Mean decrease"        = "#6da7de",
+  "Variability increase" = "#5ea15d",
+  "Variability decrease" = "#d82222",
   "Change point"         = "black"
 )
+
+#mzQC table columns -> MSstatsQC column name 
+#first block is the cv used by MS:4000213 psi ms 4.2.11 the second block keeps the pre cv key names readable
+ACCESSION_COLUMNS <- c(
+  "MS:1003169"        = "Precursor",
+  "MS:1000894"        = "RT",
+  "MS:4000248"        = "MinStartTime",
+  "MS:4000249"        = "MaxEndTime",
+  "MS:4000250"        = "FWHM",
+  "MS:1002412"        = "TotalArea",
+  "MS:1001805"        = "Annotations",
+  "Precursor"         = "Precursor",
+  "Peptide"           = "Precursor",
+  "BestRetentionTime" = "RT",
+  "MaxFwhm"           = "FWHM",
+  "MaxFWHM"           = "FWHM",
+  "MinStartTime"      = "MinStartTime",
+  "MaxEndTime"        = "MaxEndTime",
+  "TotalArea"         = "TotalArea",
+  "Annotations"       = "Annotations",
+  "IsotopeLabelType"  = "Annotations"
+)
+
+
+ORDER_BY_ACQUIRED_TIME <- FALSE
+
+#accepted formats for MS:1000747 completion time
+ACQUIRED_TIME_FORMATS <- c("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S",
+                           "%m/%d/%Y %H:%M:%S", "%m/%d/%Y %H:%M",
+                           "%m/%d/%y %H:%M:%S", "%m/%d/%y %H:%M")
 
 suppressPackageStartupMessages({
   library(jsonlite)
   library(ggplot2)
   library(grid)
 })
+
+parse_acquired <- function(x) {
+  out <- as.POSIXct(rep(NA_real_, length(x)), origin = "1970-01-01", tz = "UTC")
+  for (fmt in ACQUIRED_TIME_FORMATS) {
+    todo <- is.na(out)
+    if (!any(todo)) break
+    out[todo] <- as.POSIXct(strptime(x[todo], fmt, tz = "UTC"))
+  }
+  out
+}
 
 mzQCToMSstatsQC <- function(mzQCfile) {
   if (!file.exists(mzQCfile))
@@ -68,12 +108,16 @@ mzQCToMSstatsQC <- function(mzQCfile) {
     }
 
     tab <- lapply(tab, function(col) unlist(col, use.names = FALSE))
-    df <- as.data.frame(tab, stringsAsFactors = FALSE)
+    df <- as.data.frame(tab, stringsAsFactors = FALSE, check.names = FALSE)
 
-    ren <- c(Peptide = "Precursor", IsotopeLabelType = "Annotations",
-             BestRetentionTime = "RT", MaxFwhm = "FWHM", MaxFWHM = "FWHM")
-    hit <- names(ren)[names(ren) %in% names(df)]
-    names(df)[match(hit, names(df))] <- ren[hit]
+    known <- names(df) %in% names(ACCESSION_COLUMNS)
+    if (!any(known))
+      stop("run ", i, " (", infile$name, "): no known table columns.\n",
+           "  columns in file: ", paste(names(df), collapse = ", "), "\n",
+           "  add the missing accession to ACCESSION_COLUMNS.", call. = FALSE)
+    df <- df[, known, drop = FALSE]
+    names(df) <- ACCESSION_COLUMNS[names(df)]
+    df <- df[, !duplicated(names(df)), drop = FALSE]
 
     df$AcquiredTime <- acquired
     df$RunName      <- infile$name
@@ -83,13 +127,27 @@ mzQCToMSstatsQC <- function(mzQCfile) {
 
   data <- do.call(rbind, out)
   if (!"Annotations" %in% names(data)) data$Annotations <- NA
-  data$Annotations <- as.character(data$Annotations)   
+  data$Annotations <- as.character(data$Annotations)
+
+  parsed <- parse_acquired(data$AcquiredTime)
+  if (ORDER_BY_ACQUIRED_TIME && !any(is.na(parsed))) {
+    key <- unique(data.frame(RunName = data$RunName, t = parsed,
+                             stringsAsFactors = FALSE))
+    key <- key[order(key$t), ]
+    key$QCnoNew <- seq_len(nrow(key))
+    data$QCno <- key$QCnoNew[match(data$RunName, key$RunName)]
+  } else if (ORDER_BY_ACQUIRED_TIME) {
+    message("  ! could not parse all completion times - ",
+            "keeping the run order of the file")
+  }
 
   metrics <- intersect(c("RT", "FWHM", "TotalArea", "MinStartTime",
                          "MaxEndTime"), names(data))
   data <- data[, c("AcquiredTime", "RunName", "QCno", "Precursor",
                    "Annotations", metrics)]
+  data <- data[order(data$QCno, data$Precursor), ]
   data$Precursor <- factor(data$Precursor)
+  rownames(data) <- NULL
   data
 }
 
@@ -122,8 +180,6 @@ readMSstatsQCcsv <- function(path) {
   data
 }
 
-
-
 find_custom_metrics <- function(data) {
   data <- data[, which(colnames(data) == "Annotations"):ncol(data), drop = FALSE]
   nums <- vapply(data, is.numeric, logical(1))
@@ -140,8 +196,8 @@ getMetricData <- function(data, peptide, L, U, metric, normalization,
 
   if (normalization) {
     if (is.null(selectMean) && is.null(selectSD)) {
-      mu <- mean(metricData[L:U])   
-      sd <- sd(metricData[L:U])    
+      mu <- mean(metricData[L:U])
+      sd <- sd(metricData[L:U])
     } else {
       mu <- selectMean
       sd <- selectSD
@@ -346,7 +402,7 @@ SummaryPlot <- function(data = NULL, L = 1, U = 5, method = "XmR",
     legend.position = "bottom",
     legend.box = "horizontal",
     legend.key.spacing.x = unit(0.8, "cm"),
-    plot.margin = unit(c(1, 3, 1, 1), "lines"),
+    plot.margin = unit(c(1, 1, 1, 1), "lines"),
 
     panel.background = element_rect(fill = "white", color = NA),
     plot.background  = element_rect(fill = "white", color = NA),
@@ -439,6 +495,9 @@ main <- function() {
                                           c("MinStartTime", "MaxEndTime"))),
                              collapse = ", "),
           "   guide set: runs ", L, "-", U)
+
+  outdir <- dirname(outfile)
+  if (!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
 
   gg <- RiverPlot(data = data, L = L, U = U, method = "XmR")
   gg <- add_y_direction_labels(gg)
