@@ -1,0 +1,3 @@
+[submodule "clinical-lipidomics/mzqc-clinical-lipidomics-use-case"]
+	path = clinical-lipidomics/mzqc-clinical-lipidomics-use-case
+	url = https://github.com/lifs-tools/mzqc-clinical-lipidomics-use-case.git
