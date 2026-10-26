@@ -9,6 +9,15 @@ These scripts reproduce the mzQC files and figures for the use cases in the manu
 
 running the code of each use case on its `input/` folder will produce files of its `output/` folder
 
+
+## Cloning the repository
+
+Clone the repository, including its submodules, using:
+
+```bash
+git clone --recursive https://github.com/MS-Quality-Hub/mzqc-use-cases
+```
+
 ## Setup
 
 Download the zenodo data and put it with the code so each use case will be like:
