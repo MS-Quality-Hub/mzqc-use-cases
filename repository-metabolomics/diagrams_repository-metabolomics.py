@@ -11,7 +11,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 #path to data
-CSV_PATH = "/Users/fateme/Desktop/test_metadata/QC/Paper/metabolomics_repository_qc.csv"
+CSV_PATH = "./data/input/metabolomics_repository_qc.csv"
 
 #output path
 RESULT_DIR = "./result_figure3"

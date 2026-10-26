@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 import pandas as pd
 
-DEFAULT_INPUT = "./metabolomics_repository_qc.csv"
+DEFAULT_INPUT = "./data/input/metabolomics_repository_qc.csv"
 DEFAULT_OBO = "./psi-ms.obo"
 DEFAULT_OUTDIR = "./metabolomics_mzQC"
 
