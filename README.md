@@ -122,7 +122,7 @@ python "$REPO/repository-metabolomics/diagrams_repository-metabolomics.py"
 
 **output**
 - `metabolomics_repository_qc_mzQC/` - one mzQC file per dataset (example: `MSV000079622.mzqc`, `MTBLS136.mzqc` & `ST002008.mzqc`)
-- `result_figure3/figure3_combined.png` - figure 3 (individual panels are in `result_figure3/sankey/` and `result_figure3/violin/`)
+- `result_figure3/figure3_combined.png` - figure 3
 
 ## 5. GC-MS instrument monitoring (Figure 5)
 
