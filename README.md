@@ -20,14 +20,16 @@ git clone --recursive https://github.com/MS-Quality-Hub/mzqc-use-cases
 
 ## Setup
 
-Download the Zenodo data and put it with the code so each use case will be like:
+1. Clone this repository (see above).
+2. Download the Zenodo data and unzip it anywhere. It has one folder per use case, each with:
+   - `input/` - files the script reads
+   - `output/` - files the script produces (also included on Zenodo)
 
-```
-<use-case>/
-├── code/          #from github
-└── data/
-    ├── input/     #from zenodo
-    └── output/    #created by running related code but also available from Zenodo
+Nothing needs to be moved or copied. Set these two variables in your terminal and use the commands below:
+
+```bash
+REPO=/path/to/mzqc-use-cases      # where you cloned this repository
+ZENODO=/path/to/zenodo-download   # where you unzipped the Zenodo data
 ```
 
 ## System requirements
@@ -53,7 +55,7 @@ outlier detection (LoOP and robust PCA) on 120 DDA runs of M. tuberculosis datas
 
 **run**
 ```bash
-python proteogenomics-outliers.py ../data/input ../data/output
+python "$REPO/proteogenomics-outliers/proteogenomics-outliers.py" "$ZENODO/proteogenomics-outliers/input" "$ZENODO/proteogenomics-outliers/output"
 ```
 
 **output**
@@ -74,7 +76,7 @@ MSstatsQC river plot for the CPTAC study 9.1, site 65 system suitability runs
 
 **run**
 ```bash
-Rscript longitudinal-system-suitability.R ../data/input/Study9_1_Site_65.mzqc ../data/output/longitudinal-system-suitability.png
+Rscript "$REPO/longitudinal-system-suitability/longitudinal-system-suitability.R" "$ZENODO/longitudinal-system-suitability/input/Study9_1_Site_65.mzqc" "$ZENODO/longitudinal-system-suitability/output/longitudinal-system-suitability.png"
 ```
 
 **output**
@@ -91,7 +93,7 @@ Window-level TIC quartile retention times for 24 DIA runs (MSV000081828 / PASS00
 
 **run**
 ```bash
-Rscript reproduce_TIC_DIAMetric.R ../data/input ../data/output
+Rscript "$REPO/dia/reproduce_TIC_DIAMetric.R" "$ZENODO/dia/input" "$ZENODO/dia/output"
 ```
 
 **output**
@@ -107,19 +109,20 @@ QC metrics for public metabolomics files from GNPS/MassIVE, MetaboLights and Met
 
 **run**
 ```bash
-#mzQC files -> (one per dataset): --n_rows 0 processes all rows
-python mzQC_producer_repository-metabolomics.py \
-    --input_file ../data/input/metabolomics_repository_qc.csv \
-    --output_dir ../data/output/metabolomics_repository_qc_mzQC \
+#mzQC files (one per dataset): --n_rows 0 processes all rows
+python "$REPO/repository-metabolomics/mzQC_producer_repository-metabolomics.py" \
+    --input_file "$ZENODO/repository-metabolomics/input/metabolomics_repository_qc.csv" \
+    --output_dir "$ZENODO/repository-metabolomics/output/metabolomics_repository_qc_mzQC" \
     --n_rows 0
 
-#figure 3
-python diagrams_repository-metabolomics.py
+#figure 3 (run from the use-case folder)
+cd "$ZENODO/repository-metabolomics"
+python "$REPO/repository-metabolomics/diagrams_repository-metabolomics.py"
 ```
 
 **output**
 - `metabolomics_repository_qc_mzQC/` - one mzQC file per dataset (example: `MSV000079622.mzqc`, `MTBLS136.mzqc` & `ST002008.mzqc`)
-- `figure3.png` - figure 3
+- `result_figure3/figure3_combined.png` - figure 3 (individual panels are in `result_figure3/sankey/` and `result_figure3/violin/`)
 
 ## 5. GC-MS instrument monitoring (Figure 5)
 
