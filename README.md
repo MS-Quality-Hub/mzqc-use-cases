@@ -28,8 +28,8 @@ git clone --recursive https://github.com/MS-Quality-Hub/mzqc-use-cases
 Nothing needs to be moved or copied. Set these two variables in your terminal and use the commands below:
 
 ```bash
-REPO=/path/to/mzqc-use-cases      # where you cloned this repository
-ZENODO=/path/to/zenodo-download   # where you unzipped the Zenodo data
+REPO=/path/to/mzqc-use-cases      #where you cloned this repository
+ZENODO=/path/to/zenodo-download   #where you unzipped the Zenodo data
 ```
 
 ## System requirements
