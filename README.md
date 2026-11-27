@@ -21,7 +21,7 @@ git clone --recursive https://github.com/MS-Quality-Hub/mzqc-use-cases
 ## Setup
 
 1. Clone this repository (see above).
-2. Download the Zenodo data and unzip it anywhere. It has one folder per use case, each with:
+2. Download the Zenodo data and unzip all of them into the same folder. This gives one folder per use case, each with:
    - `input/` - files the script reads
    - `output/` - files the script produces (also included on Zenodo)
 
